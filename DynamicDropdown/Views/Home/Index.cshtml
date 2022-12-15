@@ -1,0 +1,151 @@
+﻿@model IndexViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div style="max-width: 500px; margin: 0 auto;">
+    <form>
+        <div class="mb-3" id="province">
+            <label asp-for="ProvinceId" class="form-label"></label>
+            <select class="form-select" asp-for="ProvinceId" asp-items="@Model.ProvinceDrop">
+                <option value="0" selected>-- Select --</option>
+            </select>
+            <span class="text-danger" asp-validation-for="ProvinceId"></span>
+        </div>
+
+        <div class="mb-3" id="district"></div>
+
+        <div class="mb-3" id="municipality"></div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $("#ProvinceId").on("change", function () {
+            const id = $(this).find(":selected").val();
+            const url = "@Url.Action("GetDistrictByProvince", "Home")";
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: { provinceId: id },
+                success: updateDistrictDropDown
+            });
+        });
+
+        $("#district").delegate("#DistrictId", "change", function () {
+            const id = $(this).find(":selected").val();
+            const url = "@Url.Action("GetMunicipalityByDistrict", "Home")";
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: { districtId: id },
+                success: updateMunicipalityDropDown
+            });
+        });
+
+        function updateDistrictDropDown(districts) {
+            if (districts.length > 0) {
+                const districtDiv = $("#district");
+
+                // Remove all child elements from district div
+                districtDiv.empty();
+
+                // Append label to district div
+                districtDiv.append($("<label>")
+                    .attr("for", "DistrictId")
+                    .attr("class", "form-label")
+                    .html("District")
+                );
+
+                // Create select element
+                const selectEle = $("<select>")
+                    .attr("class", "form-select")
+                    .attr("id", "DistrictId")
+                    .attr("name", "DistrictId");
+
+                // Append default option "-- Select --" to select
+                const defaultOptionEle = $("<option>")
+                    .attr("value", 0)
+                    .attr("selected", true)
+                    .html("-- Select --");
+                selectEle.append(defaultOptionEle);
+
+                // Append district options to select
+                districts.forEach((item) => {
+                    const optionEle = $("<option>")
+                        .attr("value", item.value)
+                        .html(item.text);
+
+                    selectEle.append(optionEle);
+                });
+
+                // Append select element to district div
+                districtDiv.append(selectEle);
+
+            } else {
+                const districtDiv = $("#district");
+                const municipalityDiv = $("#municipality");
+
+                // Remove all child elements from district div
+                districtDiv.empty();
+
+                // Remove all child elements from municipality div
+                municipalityDiv.empty();
+            }
+        }
+
+        function updateMunicipalityDropDown(municipalities) {
+            if (municipalities.length > 0) {
+                const municipalityDiv = $("#municipality");
+
+                // Remove all child elements from district div
+                municipalityDiv.empty();
+
+                // Append label to municipality div
+                municipalityDiv.append($("<label>")
+                    .attr("for", "MunicipalityId")
+                    .attr("class", "form-label")
+                    .html("Municipality")
+                );
+
+                // Create select element
+                const selectEle = $("<select>")
+                    .attr("class", "form-select")
+                    .attr("id", "MunicipalityId")
+                    .attr("name", "MunicipalityId");
+
+                // Append default option "-- Select --" to select
+                const defaultOptionEle = $("<option>")
+                    .attr("value", 0)
+                    .attr("selected", true)
+                    .html("-- Select --");
+                selectEle.append(defaultOptionEle);
+
+                // Append municipality options to select
+                municipalities.forEach((item) => {
+                    const optionEle = $("<option>")
+                        .attr("value", item.value)
+                        .html(item.text);
+
+                    selectEle.append(optionEle);
+                });
+
+                // Append select element to municipality div
+                municipalityDiv.append(selectEle);
+
+            } else {
+                const municipalityDiv = $("#municipality");
+
+                // Remove all child elements from municipality div
+                municipalityDiv.empty();
+            }
+        }
+    </script>
+}
